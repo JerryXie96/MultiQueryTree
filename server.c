@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include "params.h"
+
+#include "Params.h"
 
 int main(int argc, char *argv[]){
     // check the arguments
