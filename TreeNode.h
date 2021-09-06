@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "Params.h"
 
 // the structure of one block in the index
@@ -56,6 +58,16 @@ void quickSort(PlainElement* plainElementList, short selKeyThisLayer, int low, i
 }
 
 // build the tree structure based on the plaintext element list
-TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer){
+TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int length){
+    if(length==1){
+        TreeNode* tn=(TreeNode*)malloc(sizeof(TreeNode));
+        tn->id=plainElementList->id;
+        tn->selKey=selKeyThisLayer;
+        tn->leftPointer=NULL;
+        tn->rightPointer=NULL;
 
+        
+
+        return tn;
+    }
 }
