@@ -20,7 +20,7 @@ typedef struct {
 } PlainQuery;
 
 // to encrypt the query unit for one key (0: success; -1: hash error; -2: block token error)
-int encryptForOneKey(unsigned char* k,PlainQuery* plainQuery, QueryKey* queryKey){
+int encryptForOneKey(unsigned char* k1,PlainQuery* plainQuery, QueryKey* queryKey){
     char dataBuf[INT_LENGTH+1],binValue[INT_LENGTH];        // dataBuf: to store the concatenated string, binValue: the binary representation of data value
     sprintf(dataBuf,"%d",plainQuery->selKey);               // transform the key ID to string
     if (plainQuery->isSmaller>0)                            // check if the operator is smaller
@@ -29,7 +29,7 @@ int encryptForOneKey(unsigned char* k,PlainQuery* plainQuery, QueryKey* queryKey
         strcat(dataBuf,">");
     char* dataString=(char *)malloc(strlen(dataBuf));
     memcpy(dataString,dataBuf,strlen(dataBuf));             // dataString: the valid part of dataBuf
-    int ret=PRF(k,(unsigned char*)dataString,queryKey->hashValue,HASH_LENGTH);
+    int ret=PRF(k1,(unsigned char*)dataString,queryKey->hashValue,HASH_LENGTH,strlen(dataBuf),HASH_LENGTH);
     free(dataString);
     if(ret !=0)
         return -1;
@@ -55,7 +55,7 @@ int encryptForOneKey(unsigned char* k,PlainQuery* plainQuery, QueryKey* queryKey
             strcat(dataBuf,">");
         char* dataString=(char *)malloc(strlen(dataBuf));
         memcpy(dataString,dataBuf,strlen(dataBuf));
-        ret=PRF(k,(unsigned char*)dataString,queryKey->blockCipher[i],HASH_LENGTH);
+        ret=PRF(k1,(unsigned char*)dataString,queryKey->blockCipher[i],HASH_LENGTH,strlen(dataBuf),HASH_LENGTH);
         free(dataString);
         if(ret !=0)
             return -2;

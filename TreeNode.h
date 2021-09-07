@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "Params.h"
+#include "Crypto.h"
 
 // the structure of one block in the index
 typedef struct {
@@ -13,12 +14,15 @@ typedef struct {
 } IndexKey;
 
 typedef struct TN {
-    int id;                         // the id of this node
-    short selKey;                   // the index of selected key 
-    IndexKey indexKey[KEY_NUM];     // the indexes for all keys for one tree node
+    int id;                                             // the id of this node
+    short selKey;                                       // the index of selected key 
+    unsigned char gamma[GAMMA_LENGTH];                  // the random value gamma
+    IndexKey indexKey[KEY_NUM];                         // the indexes for all keys for one tree node
 
-    TN* leftPointer;                // the pointer of its left son
-    TN* rightPointer;               // the pointer of its right son
+    unsigned char ptrLeft[HASH_LENGTH],ptrRight[HASH_LENGTH];    // the hash values used to determine which direction to go
+
+    TN* leftPointer;                                    // the pointer of its left son
+    TN* rightPointer;                                   // the pointer of its right son
 } TreeNode;
 
 // the structure of plaintext data element
@@ -26,6 +30,8 @@ typedef struct {
     int id;                         // the id of this element
     unsigned int data[KEY_NUM];     // the data for all the keys in this element
 } PlainElement;
+
+extern unsigned char k1[HASH_LENGTH];
 
 // the partition function for quick sort
 int partition(PlainElement* plainElementList, short selKeyThisLayer, int low, int high){
@@ -57,17 +63,72 @@ void quickSort(PlainElement* plainElementList, short selKeyThisLayer, int low, i
     return;
 }
 
+// transform bit string to decimal value
+int binToDec(int* binArray, size_t len){
+    int res=0, w=1;
+    for(int i=len-1;i>=0;i--){
+        res+=binArray[i]*w;
+        w*=2;
+    }
+    return res;
+}
+
 // build the tree structure based on the plaintext element list
 TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int length){
-    if(length==1){
-        TreeNode* tn=(TreeNode*)malloc(sizeof(TreeNode));
-        tn->id=plainElementList->id;
-        tn->selKey=selKeyThisLayer;
-        tn->leftPointer=NULL;
-        tn->rightPointer=NULL;
+    int binValue[INT_LENGTH],curPos,t;
+    
+    quickSort(plainElementList,selKeyThisLayer,0,length-1);
 
+    PlainElement* median=&plainElementList[length/2];
+
+    TreeNode* tn=(TreeNode*)malloc(sizeof(TreeNode));
+    tn->id=median->id;
+    tn->selKey=selKeyThisLayer;
+    
+    for(int i=0;i<KEY_NUM;i++){
+        bzero(binValue,INT_LENGTH);
+        // to transform value into binary representation
+        int j=INT_LENGTH-1;
+        unsigned int dec=median->data[i];
+        while(dec!=0){
+            binValue[j--]=dec%2;
+            dec/=2;
+        }
         
-
-        return tn;
+        // generate the ciphertext for each block
+        for(j=0;j<INT_LENGTH/BLOCK_SIZE;j++){
+            curPos=0;                                               // the current pointer for the ciphertext in one block
+            for(int k=0;k<BLOCK_CIPHER_NUM+1;k++){                  // for each possible value
+                t=binToDec(&binValue[j*BLOCK_SIZE],BLOCK_SIZE);     // transform the binary value to decimal value based on BLOCK_SIZE
+                if(k<t){
+                    
+                } else if (k>t){
+                    
+                } else                                              // k=t: do nothing
+                    continue;
+            }
+        }
     }
+
+    // if(length==1){
+    //     TreeNode* tn=(TreeNode*)malloc(sizeof(TreeNode));
+    //     tn->id=plainElementList->id;
+    //     tn->selKey=selKeyThisLayer;
+    //     tn->leftPointer=NULL;
+    //     tn->rightPointer=NULL;
+
+    //     randomString(tn->gamma,GAMMA_LENGTH);
+    //     unsigned char* ptr_smaller_inner=(unsigned char*)malloc(HASH_LENGTH);
+    //     PRF(k1,(unsigned char*)"<",ptr_smaller_inner,HASH_LENGTH,strlen("<"),HASH_LENGTH);
+    //     unsigned char* ptr_smaller=(unsigned char*)malloc(HASH_LENGTH);
+    //     PRF(tn->gamma,ptr_smaller_inner,ptr_smaller,GAMMA_LENGTH,HASH_LENGTH,HASH_LENGTH);
+        
+    //     unsigned char* ptr_larger_inner=(unsigned char*)malloc(HASH_LENGTH);
+    //     PRF(k1,(unsigned char*)"<",ptr_larger_inner,HASH_LENGTH,strlen("<"),HASH_LENGTH);
+    //     unsigned char* ptr_larger=(unsigned char*)malloc(HASH_LENGTH);
+    //     PRF(tn->gamma,ptr_larger_inner,ptr_larger,GAMMA_LENGTH,HASH_LENGTH,HASH_LENGTH);
+
+
+    //     return tn;
+    // }
 }
