@@ -64,7 +64,7 @@ void quickSort(PlainElement* plainElementList, short selKeyThisLayer, int low, i
 }
 
 // transform bit string to decimal value
-int binToDec(int* binArray, size_t len){
+int binToDec(char* binArray, size_t len){
     int res=0, w=1;
     for(int i=len-1;i>=0;i--){
         res+=binArray[i]*w;
@@ -75,7 +75,8 @@ int binToDec(int* binArray, size_t len){
 
 // build the tree structure based on the plaintext element list
 TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int length){
-    int binValue[INT_LENGTH],curPos,t;
+    char dataBuf[INT_LENGTH+1],binValue[INT_LENGTH];
+    int curPos,t;
     
     quickSort(plainElementList,selKeyThisLayer,0,length-1);
 
@@ -100,8 +101,15 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
             curPos=0;                                               // the current pointer for the ciphertext in one block
             for(int k=0;k<BLOCK_CIPHER_NUM+1;k++){                  // for each possible value
                 t=binToDec(&binValue[j*BLOCK_SIZE],BLOCK_SIZE);     // transform the binary value to decimal value based on BLOCK_SIZE
+                bzero(dataBuf,INT_LENGTH+1);
                 if(k<t){
-                    
+                    sprintf(dataBuf,"%d",i);
+                    strncat(dataBuf,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
+                    strcat(dataBuf,"<");
+                    char* dataString=(char*)malloc(strlen(dataBuf));
+                    memcpy(dataString,dataBuf,strlen(dataBuf));
+                    PRF(k1,(unsigned char*)dataString,(tn->indexKey[i]).block[j].blockCipher[curPos],HASH_LENGTH,strlen(dataBuf),HASH_LENGTH);
+                    free(dataString);
                 } else if (k>t){
                     
                 } else                                              // k=t: do nothing

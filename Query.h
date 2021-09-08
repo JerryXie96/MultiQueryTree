@@ -48,7 +48,7 @@ int encryptForOneKey(unsigned char* k1,PlainQuery* plainQuery, QueryKey* queryKe
         bzero(dataBuf,INT_LENGTH+1);
         // to generate the token for this block
         sprintf(dataBuf,"%d",plainQuery->selKey);
-        strncat(dataBuf,&binValue[i*BLOCK_SIZE],2);
+        strncat(dataBuf,&binValue[i*BLOCK_SIZE],BLOCK_SIZE);
         if (plainQuery->isSmaller>0)
             strcat(dataBuf,"<");
         else
