@@ -7,4 +7,6 @@
 #define HASH_LENGTH 32                              // the length of hash value
 #define GAMMA_LENGTH 4                              // the length of gamma
 #define BLOCK_CIPHER_NUM ((1<<BLOCK_SIZE)-1)        // the number of ciphers in one index block
+#define MAX_STACK 1000                              // the maximum size of the stack for matching
+
 #endif  /* PARAMS_H */
