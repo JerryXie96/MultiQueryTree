@@ -1,3 +1,5 @@
+#ifndef CRYPTO_H
+#define CRYPTO_H
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/hmac.h>
@@ -26,3 +28,5 @@ int randomString(unsigned char* randomString_output,size_t output_len){
         return -1;
     return 0;
 }
+
+#endif /* CRYPTO_H */
