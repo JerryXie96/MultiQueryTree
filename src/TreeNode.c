@@ -6,7 +6,7 @@ int partition(PlainElement* plainElementList, short selKeyThisLayer, int low, in
     int i=low-1;
 
     for(int j=low;j<=high-1;j++){
-        if(plainElementList[j].data[i]<pivot.data[i]){
+        if(plainElementList[j].data[selKeyThisLayer]<pivot.data[selKeyThisLayer]){
             i++;
             PlainElement t=plainElementList[i];
             plainElementList[i]=plainElementList[j];
@@ -42,7 +42,7 @@ int binToDec(char* binArray, size_t len){
 
 // build the tree structure based on the plaintext element list
 TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int length){
-    char dataBuf[INT_LENGTH+1],binValue[INT_LENGTH];
+    char dataBuf[4+BLOCK_SIZE+1],binValue[INT_LENGTH];
     int curPos,t;
     
     if(length<=0)
@@ -74,21 +74,27 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
                 t=binToDec(&binValue[j*BLOCK_SIZE],BLOCK_SIZE);     // transform the binary value to decimal value based on BLOCK_SIZE
                 bzero(dataBuf,INT_LENGTH+1);
                 if(k<t){
-                    sprintf(dataBuf,"%d",i);
-                    strncat(dataBuf,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
-                    strcat(dataBuf,"<");
-                    char* dataString=(char*)malloc(strlen(dataBuf));
-                    memcpy(dataString,dataBuf,strlen(dataBuf));
-                    PRF(k1,(unsigned char*)dataString,(tn->indexKey[i]).block[j].blockCipher[curPos++],HASH_LENGTH,strlen(dataBuf),HASH_LENGTH);
-                    free(dataString);
+                    // the first four bytes is used to store the key id
+                    dataBuf[0]= (i>>24) &0xFF;
+                    dataBuf[1]= (i>>16) &0xFF;
+                    dataBuf[2]= (i>>8) &0xFF;
+                    dataBuf[3]= i &0xFF;
+                    
+                    memcpy(dataBuf+4,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
+                    dataBuf[4+BLOCK_SIZE]='<';
+                    
+                    PRF(k1,(unsigned char*)dataBuf,(tn->indexKey[i]).block[j].blockCipher[curPos++],HASH_LENGTH,4+BLOCK_SIZE+1,HASH_LENGTH);
                 } else if (k>t){
-                    sprintf(dataBuf,"%d",i);
-                    strncat(dataBuf,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
-                    strcat(dataBuf,">");
-                    char* dataString=(char*)malloc(strlen(dataBuf));
-                    memcpy(dataString,dataBuf,strlen(dataBuf));
-                    PRF(k1,(unsigned char*)dataString,(tn->indexKey[i]).block[j].blockCipher[curPos++],HASH_LENGTH,strlen(dataBuf),HASH_LENGTH);
-                    free(dataString);
+                    // the first four bytes is used to store the key id
+                    dataBuf[0]= (i>>24) &0xFF;
+                    dataBuf[1]= (i>>16) &0xFF;
+                    dataBuf[2]= (i>>8) &0xFF;
+                    dataBuf[3]= i &0xFF;
+
+                    memcpy(dataBuf+4,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
+                    dataBuf[4+BLOCK_SIZE]='>';
+                    
+                    PRF(k1,(unsigned char*)dataBuf,(tn->indexKey[i]).block[j].blockCipher[curPos++],HASH_LENGTH,4+BLOCK_SIZE+1,HASH_LENGTH);
                 } else                                              // k=t: do nothing
                     continue;
             }

@@ -23,8 +23,8 @@ typedef struct TN {
 
     unsigned char ptrLeft[HASH_LENGTH],ptrRight[HASH_LENGTH];    // the hash values used to determine which direction to go
 
-    TN* leftPointer;                                    // the pointer of its left son
-    TN* rightPointer;                                   // the pointer of its right son
+    struct TN* leftPointer;                                    // the pointer of its left son
+    struct TN* rightPointer;                                   // the pointer of its right son
 } TreeNode;
 
 // the structure of plaintext data element

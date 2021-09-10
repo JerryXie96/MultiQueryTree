@@ -28,7 +28,7 @@ TreeNode* pop(){
 }
 
 // to encrypt the query unit for one key (0: success; -1: hash error; -2: block token error)
-int encryptForOneKey(unsigned char* k1,PlainQuery* plainQuery, QueryKey* queryKey){
+int encryptForOneKey(unsigned char* k1,PlainQueryKey* plainQuery, QueryKey* queryKey){
     char dataBuf[INT_LENGTH+1],binValue[INT_LENGTH];        // dataBuf: to store the concatenated string, binValue: the binary representation of data value
     sprintf(dataBuf,"%d",plainQuery->selKey);               // transform the key ID to string
     if (plainQuery->isSmaller>0)                            // check if the operator is smaller
@@ -75,7 +75,7 @@ int encryptForOneKey(unsigned char* k1,PlainQuery* plainQuery, QueryKey* queryKe
 int encryptQuery(unsigned char* k,PlainQuery* plainQuery,Query* query){
     int ret;
     for(int i=0;i<KEY_NUM;i++){
-        ret=encryptForOneKey(k,&plainQuery[i],&(query->keys[i]));
+        ret=encryptForOneKey(k,&(plainQuery->plainQueryKey[i]),&(query->keys[i]));
         if (ret!=0)
             return -1;
     }
@@ -106,7 +106,7 @@ int search(TreeNode* root, Query* query,int* result){
     while(!isEmpty()){
         tn=pop();
         if(tn==NULL){
-            printf(stderr,"error: empty stack\n");
+            fprintf(stderr,"error: empty stack\n");
             return -1;
         }
         isAllMatched=1;
@@ -117,7 +117,7 @@ int search(TreeNode* root, Query* query,int* result){
         } else {                                // not matched, choose the direction for the next step
             isAllMatched=0;
             unsigned char* hash_result=(unsigned char*)malloc(HASH_LENGTH);
-            PRF(tn->gamma,query->keys[tn->selKey],hash_result,HASH_LENGTH,HASH_LENGTH,HASH_LENGTH);
+            PRF(tn->gamma,(query->keys[tn->selKey]).hashValue,hash_result,HASH_LENGTH,HASH_LENGTH,HASH_LENGTH);
             if(!memcmp(tn->ptrLeft,hash_result,HASH_LENGTH))
                 push(tn->leftPointer);
             if(!memcmp(tn->ptrRight,hash_result,HASH_LENGTH))

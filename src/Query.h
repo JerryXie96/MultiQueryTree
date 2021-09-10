@@ -2,6 +2,7 @@
 #define QUERY_H
 #include "Params.h"
 #include "Crypto.h"
+#include "TreeNode.h"
 
 // the query unit for one key
 typedef struct {
@@ -14,11 +15,15 @@ typedef struct {
     QueryKey keys[KEY_NUM];
 } Query;
 
-// the plaintext query
+// the plaintext query for one key
 typedef struct {
     short selKey;                                           // the target key ID
     unsigned char isSmaller;                                // if the operator is smaller
     unsigned int value;                                     // the corresponding value
+} PlainQueryKey;
+
+typedef struct {
+    PlainQueryKey plainQueryKey[KEY_NUM];
 } PlainQuery;
 
 int encryptQuery(unsigned char* k,PlainQuery* plainQuery,Query* query);

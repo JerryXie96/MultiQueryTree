@@ -1,6 +1,6 @@
 .vscode
 
-server
-test.c
-test
+src/*.o
+
+localTest
 workspace.code-workspace
