@@ -12,7 +12,7 @@ typedef struct {
 
 // the structure of one key in the index
 typedef struct {
-    Block block[BLOCK_SIZE];
+    Block block[INT_LENGTH/BLOCK_SIZE];
 } IndexKey;
 
 typedef struct TN {

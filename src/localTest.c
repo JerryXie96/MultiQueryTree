@@ -43,7 +43,27 @@ void init(){
 
 
 int main(){
+    int res[6];
+
     init();
     tn=buildTree(plainElement,0,6);
-    printf("%d\n",tn->leftPointer->id);
+    PlainQuery plainQuery;
+
+    plainQuery.plainQueryKey[0].isSmaller=1;
+    plainQuery.plainQueryKey[0].selKey=0;
+    plainQuery.plainQueryKey[0].value=600;
+
+    plainQuery.plainQueryKey[1].isSmaller=1;
+    plainQuery.plainQueryKey[1].selKey=1;
+    plainQuery.plainQueryKey[1].value=45;
+
+    Query* query=(Query*)malloc(sizeof(Query));
+    int ret=encryptQuery(k1,&plainQuery,query);
+
+    ret=search(tn,query,res);
+    
+    for(int i=0;i<ret;i++)
+        printf("%d ",res[i]);
+
+    return 0;
 }

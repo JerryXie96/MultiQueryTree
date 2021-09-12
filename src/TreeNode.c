@@ -42,7 +42,7 @@ int binToDec(char* binArray, size_t len){
 
 // build the tree structure based on the plaintext element list
 TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int length){
-    char dataBuf[4+BLOCK_SIZE+1],binValue[INT_LENGTH];
+    char dataBuf[4+BLOCK_SIZE+1],binValue[INT_LENGTH],kBin[BLOCK_SIZE];
     int curPos,t;
     
     if(length<=0)
@@ -70,19 +70,27 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
         // generate the ciphertext for each block
         for(j=0;j<INT_LENGTH/BLOCK_SIZE;j++){
             curPos=0;                                               // the current pointer for the ciphertext in one block
+            t=binToDec(&binValue[j*BLOCK_SIZE],BLOCK_SIZE);         // transform the binary value to decimal value based on BLOCK_SIZE
             for(int k=0;k<BLOCK_CIPHER_NUM+1;k++){                  // for each possible value
-                t=binToDec(&binValue[j*BLOCK_SIZE],BLOCK_SIZE);     // transform the binary value to decimal value based on BLOCK_SIZE
-                bzero(dataBuf,INT_LENGTH+1);
+                bzero(dataBuf,4+BLOCK_SIZE+1);
                 if(k<t){
                     // the first four bytes is used to store the key id
-                    dataBuf[0]= (i>>24) &0xFF;
-                    dataBuf[1]= (i>>16) &0xFF;
-                    dataBuf[2]= (i>>8) &0xFF;
-                    dataBuf[3]= i &0xFF;
+                    dataBuf[0]=(i>>24) & 0xFF;
+                    dataBuf[1]=(i>>16) & 0xFF;
+                    dataBuf[2]=(i>>8) & 0xFF;
+                    dataBuf[3]=i & 0xFF;
                     
-                    memcpy(dataBuf+4,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
+                    bzero(kBin,BLOCK_SIZE);
+                    int jk=BLOCK_SIZE-1;
+                    unsigned int dec=k;
+                    while(dec!=0){
+                        kBin[jk--]=dec%2;
+                        dec/=2;
+                    }
+
+                    memcpy(dataBuf+4,kBin,BLOCK_SIZE);
                     dataBuf[4+BLOCK_SIZE]='<';
-                    
+
                     PRF(k1,(unsigned char*)dataBuf,(tn->indexKey[i]).block[j].blockCipher[curPos++],HASH_LENGTH,4+BLOCK_SIZE+1,HASH_LENGTH);
                 } else if (k>t){
                     // the first four bytes is used to store the key id
@@ -91,7 +99,15 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
                     dataBuf[2]= (i>>8) &0xFF;
                     dataBuf[3]= i &0xFF;
 
-                    memcpy(dataBuf+4,&binValue[j*BLOCK_SIZE],BLOCK_SIZE);
+                    bzero(kBin,BLOCK_SIZE);
+                    int jk=BLOCK_SIZE-1;
+                    unsigned int dec=k;
+                    while(dec!=0){
+                        kBin[jk--]=dec%2;
+                        dec/=2;
+                    }
+
+                    memcpy(dataBuf+4,kBin,BLOCK_SIZE);
                     dataBuf[4+BLOCK_SIZE]='>';
                     
                     PRF(k1,(unsigned char*)dataBuf,(tn->indexKey[i]).block[j].blockCipher[curPos++],HASH_LENGTH,4+BLOCK_SIZE+1,HASH_LENGTH);
@@ -99,23 +115,24 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
                     continue;
             }
         }
+        
     }
 
     randomString(tn->gamma,GAMMA_LENGTH);
-    unsigned char* ptr_smaller_inner=(unsigned char*)malloc(HASH_LENGTH);
+    unsigned char ptr_smaller_inner[HASH_LENGTH];
     PRF(k1,(unsigned char*)"<",ptr_smaller_inner,HASH_LENGTH,strlen("<"),HASH_LENGTH);
-    unsigned char* ptr_smaller=(unsigned char*)malloc(HASH_LENGTH);
+    unsigned char ptr_smaller[HASH_LENGTH];
     PRF(tn->gamma,ptr_smaller_inner,ptr_smaller,GAMMA_LENGTH,HASH_LENGTH,HASH_LENGTH);
 
-    unsigned char* ptr_larger_inner=(unsigned char*)malloc(HASH_LENGTH);
-    PRF(k1,(unsigned char*)"<",ptr_larger_inner,HASH_LENGTH,strlen(">"),HASH_LENGTH);
-    unsigned char* ptr_larger=(unsigned char*)malloc(HASH_LENGTH);
+    unsigned char ptr_larger_inner[HASH_LENGTH];
+    PRF(k1,(unsigned char*)">",ptr_larger_inner,HASH_LENGTH,strlen(">"),HASH_LENGTH);
+    unsigned char ptr_larger[HASH_LENGTH];
     PRF(tn->gamma,ptr_larger_inner,ptr_larger,GAMMA_LENGTH,HASH_LENGTH,HASH_LENGTH);
 
-    unsigned char* ptr_concated=(unsigned char*)malloc(HASH_LENGTH*2);
+    unsigned char ptr_concated[HASH_LENGTH*2];
     memcpy(ptr_concated,ptr_larger,HASH_LENGTH);
     memcpy(ptr_concated+HASH_LENGTH,ptr_smaller,HASH_LENGTH);
-    unsigned char* hash_to_deter=(unsigned char*)malloc(HASH_LENGTH);
+    unsigned char hash_to_deter[HASH_LENGTH];
     PRF(k1,(unsigned char*)ptr_concated,hash_to_deter,HASH_LENGTH,2*HASH_LENGTH,HASH_LENGTH);
     if(hash_to_deter[HASH_LENGTH*2-1]%2==0){
         memcpy(tn->ptrLeft,ptr_smaller,HASH_LENGTH);
@@ -130,6 +147,7 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
         memcpy(tn->ptrRight,ptr_smaller,HASH_LENGTH);
         tn->rightPointer=buildTree(plainElementList,(selKeyThisLayer+1)%KEY_NUM,length/2);
     }
+    
     
     return tn;
 }
