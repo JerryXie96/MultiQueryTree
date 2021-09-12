@@ -15,6 +15,22 @@ int PRF(unsigned char* key,unsigned char* data,unsigned char* PRF_output, size_t
     return 0;
 }
 
+// the hash function based on SHA256 (0: success; -1: length error)
+int sha256(unsigned char* data, unsigned char* output, size_t data_len, size_t output_len){
+    // check the length of output_len, if smaller, return -1
+    if(output_len<SHA256_DIGEST_LENGTH)
+        return -1;
+
+    SHA256_CTX ctx;
+    unsigned char buffer[SHA256_DIGEST_LENGTH];
+
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx,data,data_len);
+    SHA256_Final(buffer,&ctx);
+    memcpy(output,buffer,SHA256_DIGEST_LENGTH);
+    return 0;
+}
+
 // the secure random string generator (0: success; -1: random error)
 int randomString(unsigned char* randomString_output,size_t output_len){
     int code=RAND_bytes(randomString_output,output_len);

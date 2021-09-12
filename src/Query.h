@@ -6,8 +6,8 @@
 
 // the query unit for one key
 typedef struct {
-    unsigned char blockCipher[INT_LENGTH/BLOCK_SIZE][HASH_LENGTH];   // Enc(key||op||value)
-    unsigned char hashValue[HASH_LENGTH];                            // H_k(key||op)
+    unsigned char blockCipher[INT_LENGTH/BLOCK_SIZE][HMAC_LENGTH];   // Enc(key||op||value)
+    unsigned char hashValue[HMAC_LENGTH];                            // H_k(key||op)
 } QueryKey;
 
 // the query structure

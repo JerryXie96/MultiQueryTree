@@ -4,11 +4,9 @@
 #include "TreeNode.h"
 
 PlainElement plainElement[6];
-PlainQuery plainQuery;
-unsigned char k1[HASH_LENGTH];
+unsigned char k1[HMAC_LENGTH];
 
 TreeNode* tn;
-Query query;
 
 void init(){
     plainElement[0].id=0;
@@ -35,7 +33,7 @@ void init(){
     plainElement[5].data[0]=400;
     plainElement[5].data[1]=50;
 
-    randomString(k1,HASH_LENGTH);
+    randomString(k1,HMAC_LENGTH);
     
     return;
 }
@@ -43,6 +41,7 @@ void init(){
 
 
 int main(){
+    FILE *out=fopen("k1.key","w");
     int res[6];
 
     init();
@@ -58,12 +57,16 @@ int main(){
     plainQuery.plainQueryKey[1].value=45;
 
     Query* query=(Query*)malloc(sizeof(Query));
-    int ret=encryptQuery(k1,&plainQuery,query);
+    encryptQuery(k1,&plainQuery,query);
 
-    ret=search(tn,query,res);
+    int ret=search(tn,query,res);
     
     for(int i=0;i<ret;i++)
         printf("%d ",res[i]);
+
+    for(int i=0;i<HMAC_LENGTH;i++)
+        fprintf(out,"%u ",k1[i]);
+    fclose(out);
 
     return 0;
 }

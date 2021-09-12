@@ -29,12 +29,12 @@ TreeNode* pop(){
 
 // to encrypt the query unit for one key (0: success; -1: hash error; -2: block token error)
 int encryptForOneKey(unsigned char* k1,PlainQueryKey* plainQuery, QueryKey* queryKey){
-    char dataBuf[4+BLOCK_SIZE+1],binValue[INT_LENGTH];        // dataBuf: to store the concatenated string, binValue: the binary representation of data value
+    char dataBuf[SHA256_DIGEST_LENGTH+4+BLOCK_SIZE+1],binValue[INT_LENGTH];        // dataBuf: to store the concatenated string, binValue: the binary representation of data value
 
     if ((plainQuery->isSmaller)>0)                            // check if the operator is smaller
-        PRF(k1,(unsigned char*)"<",queryKey->hashValue,HASH_LENGTH,strlen("<"),HASH_LENGTH);
+        PRF(k1,(unsigned char*)"<",queryKey->hashValue,HMAC_LENGTH,strlen("<"),HMAC_LENGTH);
     else
-        PRF(k1,(unsigned char*)">",queryKey->hashValue,HASH_LENGTH,strlen(">"),HASH_LENGTH);
+        PRF(k1,(unsigned char*)">",queryKey->hashValue,HMAC_LENGTH,strlen(">"),HMAC_LENGTH);
     
 
     // to transform value into binary representation
@@ -48,20 +48,22 @@ int encryptForOneKey(unsigned char* k1,PlainQueryKey* plainQuery, QueryKey* quer
 
     for(i=0;i<INT_LENGTH/BLOCK_SIZE;i++){                   // for each block
         // to generate the token for this block
-        bzero(dataBuf,4+BLOCK_SIZE+1);
+        bzero(dataBuf,SHA256_DIGEST_LENGTH+4+BLOCK_SIZE+1);
+        if(i>0)
+            sha256(binValue,dataBuf,i*BLOCK_SIZE,SHA256_DIGEST_LENGTH);
         // the first four bytes is used to store the selKey
-        dataBuf[0]=((plainQuery->selKey)>>24) & 0xFF;
-        dataBuf[1]=((plainQuery->selKey)>>16) & 0xFF;
-        dataBuf[2]=((plainQuery->selKey)>>8) & 0xFF;
-        dataBuf[3]=(plainQuery->selKey) & 0xFF;
+        dataBuf[SHA256_DIGEST_LENGTH+0]=((plainQuery->selKey)>>24) & 0xFF;
+        dataBuf[SHA256_DIGEST_LENGTH+1]=((plainQuery->selKey)>>16) & 0xFF;
+        dataBuf[SHA256_DIGEST_LENGTH+2]=((plainQuery->selKey)>>8) & 0xFF;
+        dataBuf[SHA256_DIGEST_LENGTH+3]=(plainQuery->selKey) & 0xFF;
         
-        memcpy(dataBuf+4,&binValue[i*BLOCK_SIZE],BLOCK_SIZE);
+        memcpy(dataBuf+SHA256_DIGEST_LENGTH+4,&binValue[i*BLOCK_SIZE],BLOCK_SIZE);
         if ((plainQuery->isSmaller)>0)
-            dataBuf[4+BLOCK_SIZE]='<';
+            dataBuf[SHA256_DIGEST_LENGTH+4+BLOCK_SIZE]='<';
         else
-            dataBuf[4+BLOCK_SIZE]='>';
+            dataBuf[SHA256_DIGEST_LENGTH+4+BLOCK_SIZE]='>';
 
-        PRF(k1,(unsigned char*)dataBuf,queryKey->blockCipher[i],HASH_LENGTH,4+BLOCK_SIZE+1,HASH_LENGTH);
+        PRF(k1,(unsigned char*)dataBuf,queryKey->blockCipher[i],HMAC_LENGTH,SHA256_DIGEST_LENGTH+4+BLOCK_SIZE+1,HMAC_LENGTH);
     }
     return 0;
 }
@@ -79,11 +81,13 @@ int encryptQuery(unsigned char* k1,PlainQuery* plainQuery,Query* query){
 
 // check if this treenode (tn) is matched for the selKey with query (1: matched; 0: not matched)
 int isMatched(TreeNode* tn, short selKey, Query* query){
+    unsigned char hmacBuf[HMAC_LENGTH];
     int isMatched=0;
         
     for(int i=0;i<INT_LENGTH/BLOCK_SIZE;i++){
+        PRF(tn->gamma,(query->keys[selKey]).blockCipher[i],hmacBuf,GAMMA_LENGTH,HMAC_LENGTH,HMAC_LENGTH);
         for(int j=0;j<BLOCK_CIPHER_NUM;j++){
-            if(!memcmp((tn->indexKey[selKey]).block[i].blockCipher[j],(query->keys[selKey]).blockCipher[i],HASH_LENGTH)){
+            if(!memcmp((tn->indexKey[selKey]).block[i].blockCipher[j],hmacBuf,HMAC_LENGTH)){
                 isMatched=1;
                 break;
             }
@@ -98,7 +102,7 @@ int isMatched(TreeNode* tn, short selKey, Query* query){
 // search the tree (result: the list of the matched IDs)
 int search(TreeNode* root, Query* query,int* result){
     int i,isAllMatched,resPtr=0;
-    unsigned char hash_result[HASH_LENGTH];
+    unsigned char hash_result[HMAC_LENGTH];
     TreeNode* tn;
     push(root);
     while(!isEmpty()){
@@ -112,10 +116,10 @@ int search(TreeNode* root, Query* query,int* result){
                 push(tn->rightPointer);
         } else {                                // not matched, choose the direction for the next step
             isAllMatched=0;
-            PRF(tn->gamma,(query->keys[tn->selKey]).hashValue,hash_result,GAMMA_LENGTH,HASH_LENGTH,HASH_LENGTH);
-            if(tn->leftPointer!=NULL && !memcmp(tn->ptrLeft,hash_result,HASH_LENGTH))
+            PRF(tn->gamma,(query->keys[tn->selKey]).hashValue,hash_result,GAMMA_LENGTH,HMAC_LENGTH,HMAC_LENGTH);
+            if(tn->leftPointer!=NULL && !memcmp(tn->ptrLeft,hash_result,HMAC_LENGTH))
                 push(tn->leftPointer);
-            if(tn->rightPointer!=NULL && !memcmp(tn->ptrRight,hash_result,HASH_LENGTH))
+            if(tn->rightPointer!=NULL && !memcmp(tn->ptrRight,hash_result,HMAC_LENGTH))
                 push(tn->rightPointer);
         }
 

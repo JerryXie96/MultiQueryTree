@@ -1,6 +1,5 @@
 .vscode
 
-src/*.o
-
+k1.key
 localTest
 workspace.code-workspace
