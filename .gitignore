@@ -1,5 +1,7 @@
 .vscode
 .idea
+cmake-build-debug
+src/build
 
 k1.key
 localTest

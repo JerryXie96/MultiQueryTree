@@ -101,7 +101,7 @@ int isMatched(TreeNode* tn, short selKey, Query* query){
 
 // search the tree (result: the list of the matched IDs)
 int search(TreeNode* root, Query* query,int* result){
-    int i,isAllMatched,resPtr=0;
+    int i,isAllMatched,resPtr=1;
     unsigned char hash_result[HMAC_LENGTH];
     TreeNode* tn;
     push(root);
@@ -136,6 +136,7 @@ int search(TreeNode* root, Query* query,int* result){
         // if all the ciphertexts are matched, add it to the result list
         if(isAllMatched)
             result[resPtr++]=tn->id;
+        result[0]=resPtr-1;                 // result[0] stores the length of result list
     }
     return resPtr;
 }

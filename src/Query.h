@@ -26,7 +26,7 @@ typedef struct {
     PlainQueryKey plainQueryKey[KEY_NUM];
 } PlainQuery;
 
-int encryptQuery(unsigned char* k,PlainQuery* plainQuery,Query* query);
+int encryptQuery(unsigned char* k1,PlainQuery* plainQuery,Query* query);
 int search(TreeNode* root, Query* query,int* result);
 
 #endif /* QUERY_H */
