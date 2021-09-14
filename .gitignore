@@ -2,6 +2,7 @@
 .idea
 cmake-build-debug
 src/build
+Statlog (Landsat Satellite) Data Set
 
 k1.key
 localTest
