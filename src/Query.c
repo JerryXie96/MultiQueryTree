@@ -136,7 +136,7 @@ int search(TreeNode* root, Query* query,int* result){
         // if all the ciphertexts are matched, add it to the result list
         if(isAllMatched)
             result[resPtr++]=tn->id;
-        result[0]=resPtr-1;                 // result[0] stores the length of result list
     }
+    result[0]=resPtr-1;                 // result[0] stores the length of result list
     return resPtr;
 }

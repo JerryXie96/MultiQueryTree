@@ -27,7 +27,7 @@ void client_query(int sockfd){
     for(int i=0;i<KEY_NUM;i++){
         plainQuery.plainQueryKey[i].isSmaller=rand()%2;
         plainQuery.plainQueryKey[i].selKey=i;
-        plainQuery.plainQueryKey[i].value=rand()%500;      // the value range is from 0 to 499;
+        plainQuery.plainQueryKey[i].value=rand()%200;      // the value range is from 0 to 199;
     }
 
     encryptQuery(k1,&plainQuery,&query);
@@ -78,7 +78,8 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-
+    printf("Querying.\n");
+    client_query(sockfd);
 
     return 0;
 }

@@ -49,7 +49,7 @@ void server_search(int clientfd){
 
     query=(Query *)queryBin;
     printf("Searching.\n");
-    search(root,query,res);
+    int searchLen=search(root,query,res);
     printf("Search successfully.\n");
 
     len=send(clientfd,res,(RECORDS_NUM+1)*sizeof(int),0);
@@ -58,6 +58,7 @@ void server_search(int clientfd){
         return;
     }
 
+    printf("%d %d %ld\n",res[0],searchLen,sizeof(Query));
     free(queryBin);
     return;
 }
@@ -72,6 +73,12 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Please provide enough arguments! Format: Server [port]\n");
         return -1;
     }
+
+    printf("Initing.\n");
+    init();
+
+    printf("Index Building.\n");
+    build();
 
     sockfd=socket(AF_INET,SOCK_STREAM,0);
     if(sockfd==-1) {
