@@ -105,17 +105,21 @@ int search(TreeNode* root, Query* query,int* result){
     unsigned char hash_result[HMAC_LENGTH];
     TreeNode* tn;
     push(root);
+    // int search_time=0;
     while(!isEmpty()){
         tn=pop();
         isAllMatched=1;
+        // search_time++;
         // check the ciphertext for selKey
         if(isMatched(tn,tn->selKey,query)){
             if(tn->leftPointer!=NULL)
                 push(tn->leftPointer);
             if(tn->rightPointer!=NULL)
                 push(tn->rightPointer);
+            // printf("Matched\n");
         } else {                                // not matched, choose the direction for the next step
             isAllMatched=0;
+            // printf("Record_id=%d\n",tn->id);
             PRF(tn->gamma,(query->keys[tn->selKey]).hashValue,hash_result,GAMMA_LENGTH,HMAC_LENGTH,HMAC_LENGTH);
             if(tn->leftPointer!=NULL && !memcmp(tn->ptrLeft,hash_result,HMAC_LENGTH))
                 push(tn->leftPointer);
@@ -138,5 +142,6 @@ int search(TreeNode* root, Query* query,int* result){
             result[resPtr++]=tn->id;
     }
     result[0]=resPtr-1;                 // result[0] stores the length of result list
+    // printf("search_time=%d\n",search_time);
     return resPtr;
 }

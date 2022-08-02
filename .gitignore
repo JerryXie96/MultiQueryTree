@@ -1,9 +1,9 @@
 .vscode
 .idea
+build
 cmake-build-debug
-src/build
-Statlog (Landsat Satellite) Data Set
 
 k1.key
+LBMA.*
 localTest
 workspace.code-workspace

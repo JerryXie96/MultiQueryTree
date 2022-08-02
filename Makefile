@@ -1,30 +1,33 @@
-all: clean makedir Crypto TreeNode Query Server Client
-	cc -g src/build/Crypto.o src/build/TreeNode.o src/build/Query.o src/build/Server.o -o src/build/Server -lcrypto
-	cc -g src/build/Crypto.o src/build/TreeNode.o src/build/Query.o src/build/Client.o -o src/build/Client -lcrypto
+all: clean makedir Crypto TreeNode Query Server Client KeyGenerator
+	cc -O2 ./build/Crypto.o ./build/TreeNode.o ./build/Query.o ./build/Server.o -o ./build/Server -lcrypto
+	cc -O2 ./build/Crypto.o ./build/TreeNode.o ./build/Query.o ./build/Client.o -o ./build/Client -lcrypto
 
-local: clean makedir Crypto TreeNode Query LocalTest
-	cc -g src/build/Crypto.o src/build/TreeNode.o src/build/Query.o src/build/localTest.o -o src/build/localTest -lcrypto
+local: clean makedir Crypto TreeNode Query LocalTest KeyGenerator
+	cc -O2 ./build/Crypto.o ./build/TreeNode.o ./build/Query.o ./build/localTest.o -o ./build/localTest -lcrypto
 
 Crypto:
-	cc -g -c src/Crypto.c -o src/build/Crypto.o
+	cc -O2 -c src/Crypto.c -o ./build/Crypto.o
 
 TreeNode:
-	cc -g -c src/TreeNode.c -o src/build/TreeNode.o
+	cc -O2 -c src/TreeNode.c -o ./build/TreeNode.o
 
 Query:
-	cc -g -c src/Query.c -o src/build/Query.o
+	cc -O2 -c src/Query.c -o ./build/Query.o
 
 LocalTest:
-	cc -g -c src/localTest.c -o src/build/localTest.o
+	cc -O2 -c src/localTest.c -o ./build/localTest.o
 
 Server:
-	cc -g -c src/Server.c -o src/build/Server.o
+	cc -O2 -c src/Server.c -o ./build/Server.o
 
 Client:
-	cc -g -c src/Client.c -o src/build/Client.o
+	cc -O2 -c src/Client.c -o ./build/Client.o
+
+KeyGenerator:
+	cc -O2 src/KeyGenerator.c -o ./build/KeyGenerator -lcrypto
 
 makedir:
-	mkdir src/build
+	mkdir ./build
 
 clean:
-	rm -rf src/build
+	rm -rf ./build

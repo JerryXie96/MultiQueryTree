@@ -1,6 +1,7 @@
 #ifndef TREENODE_H
 #define TREENODE_H
 #include <stdlib.h>
+#include <math.h>
 
 #include "Params.h"
 #include "Crypto.h"

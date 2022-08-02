@@ -13,7 +13,7 @@ void init(){
     for(int i=0;i<RECORDS_NUM;i++){
         plainElement[i].id=i;
         for(int j=0;j<KEY_NUM;j++){
-            plainElement[i].data[j]=rand()%500;         // the value range is from 0 to 499
+            plainElement[i].data[j]=i;         // the value range is from 0 to 499
         }
     }
 
@@ -33,19 +33,28 @@ int main(){
 
     srand(time(NULL));
     for(int i=0;i<KEY_NUM;i++){
-        plainQuery.plainQueryKey[i].isSmaller=rand()%2;
+        plainQuery.plainQueryKey[i].isSmaller=1;
         plainQuery.plainQueryKey[i].selKey=i;
-        plainQuery.plainQueryKey[i].value=rand()%500;      // the value range is from 0 to 499;
+        plainQuery.plainQueryKey[i].value=0;      // the value range is from 0 to 499;
     }
 
     Query* query=(Query*)malloc(sizeof(Query));
     encryptQuery(k1,&plainQuery,query);
 
+    int isMatched[RECORDS_NUM];
     int ret=search(tn,query,res);
+
+//    printCreated();
     
-    for(int i=1;i<res[0];i++)
+    for(int i=0;i<RECORDS_NUM;i++)
+        isMatched[i]=0;
+
+    for(int i=1;i<res[0];i++){
+        isMatched[i]=1;
         printf("%d ",res[i]);
+    }
     printf("\n");
+    printf("%d\n",res[0]);
 
     return 0;
 }

@@ -57,7 +57,7 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
     tn->id=median->id;
     tn->selKey=selKeyThisLayer;
     randomString(tn->gamma,GAMMA_LENGTH);                           // generate the value of gamma randomly
-    
+
     // generate the ciphertext for each key in tn
     for(int i=0;i<KEY_NUM;i++){
         bzero(binValue,INT_LENGTH);
@@ -139,17 +139,18 @@ TreeNode* buildTree(PlainElement* plainElementList, short selKeyThisLayer, int l
     memcpy(ptr_concated+HMAC_LENGTH,ptr_smaller,HMAC_LENGTH);
     unsigned char hash_to_deter[HMAC_LENGTH];
     PRF(k1,(unsigned char*)ptr_concated,hash_to_deter,HMAC_LENGTH,2*HMAC_LENGTH,HMAC_LENGTH);
+    // the smaller sign in the hash parameter means the node's value is smaller than the values in this branch
     if(hash_to_deter[HMAC_LENGTH*2-1]%2==0){
-        memcpy(tn->ptrLeft,ptr_smaller,HMAC_LENGTH);
+        memcpy(tn->ptrLeft,ptr_larger,HMAC_LENGTH);
         tn->leftPointer=buildTree(plainElementList,(selKeyThisLayer+1)%KEY_NUM,length/2);
 
-        memcpy(tn->ptrRight,ptr_larger,HMAC_LENGTH);
-        tn->rightPointer=buildTree(plainElementList+(length/2+1),(selKeyThisLayer+1)%KEY_NUM,length/2-1);
-    } else {
-        memcpy(tn->ptrLeft,ptr_larger,HMAC_LENGTH);
-        tn->leftPointer=buildTree(plainElementList+(length/2+1),(selKeyThisLayer+1)%KEY_NUM,length/2-1);
-
         memcpy(tn->ptrRight,ptr_smaller,HMAC_LENGTH);
+        tn->rightPointer=buildTree(plainElementList+(length/2+1),(selKeyThisLayer+1)%KEY_NUM,(int)(ceil(length/2.0)-1));
+    } else {
+        memcpy(tn->ptrLeft,ptr_smaller,HMAC_LENGTH);
+        tn->leftPointer=buildTree(plainElementList+(length/2+1),(selKeyThisLayer+1)%KEY_NUM,(int)(ceil(length/2.0)-1));
+
+        memcpy(tn->ptrRight,ptr_larger,HMAC_LENGTH);
         tn->rightPointer=buildTree(plainElementList,(selKeyThisLayer+1)%KEY_NUM,length/2);
     }
     
